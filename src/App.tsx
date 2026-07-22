@@ -28,7 +28,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-amber-400 selection:text-black">
+    <div className="relative min-h-screen bg-white text-gray-900 selection:bg-gray-950 selection:text-white">
       {/* Header / Navbar appears smoothly as user scrolls towards the last frames */}
       <Navbar
         scrollProgress={scrollProgress}

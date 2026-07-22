@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 
 interface NavbarProps {
   onScheduleClick: () => void;
@@ -18,9 +18,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Navbar appears as user scrolls toward the last image (from 55% scroll progress up to 95%)
-  const navOpacity = Math.max(0, Math.min(1, (scrollProgress - 0.55) * 2.5));
-  const navTranslateY = (1 - navOpacity) * -25;
+  // Navbar reveals as user scrolls toward final frames (from 40% scroll progress up to 90%)
+  const navOpacity = Math.max(0, Math.min(1, (scrollProgress - 0.40) * 2.0));
+  const navTranslateY = (1 - navOpacity) * -20;
 
   const navLinks = [
     { name: 'Home', id: 'home' },
@@ -41,120 +41,96 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md bg-black/40 border-b border-white/10"
+      className="fixed top-5 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 transition-all duration-300 pointer-events-none"
       style={{
         opacity: navOpacity,
         transform: `translateY(${navTranslateY}px)`,
         pointerEvents: navOpacity > 0.05 ? 'auto' : 'none',
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Left Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-7">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        
+        {/* Left: Brand Logo (Clean, no circular background border) */}
+        <div
+          className="flex items-center cursor-pointer select-none group py-1"
+          onClick={() => onNavClick('home')}
+        >
+          <img
+            src="/Assets/logo.png"
+            alt="Dreamscape Designs Logo"
+            className="h-9 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 filter drop-shadow-md"
+          />
+        </div>
+
+        {/* Center: Floating Dark Pill Nav */}
+        <nav className="hidden md:inline-flex items-center p-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-white/10 shadow-2xl space-x-1">
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => handleLinkClick(link.id)}
+                className={`px-4.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-white text-slate-950 shadow-md scale-105'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {link.name}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Right: Dark Pill CTA Button with Green Dot */}
+        <div className="hidden md:flex items-center">
+          <button
+            onClick={onScheduleClick}
+            className="inline-flex items-center space-x-2.5 px-5 py-2.5 rounded-full bg-slate-950 text-white text-xs font-semibold hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/10"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm" />
+            <span>Schedule A Visit</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
+          </button>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="flex md:hidden items-center space-x-2">
+          <button
+            onClick={onScheduleClick}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-950 text-white text-xs font-semibold shadow-md"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>Visit</span>
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-slate-950 bg-white/90 backdrop-blur-md rounded-full shadow-md border border-gray-200 focus:outline-none"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+      </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden mt-3 max-w-sm mx-auto rounded-3xl bg-slate-950 text-white p-5 shadow-2xl border border-white/10 animate-fade-in space-y-3 pointer-events-auto">
+          <nav className="flex flex-col space-y-1.5">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-white relative py-1 ${
+                className={`text-left px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                   activeSection === link.id
-                    ? 'text-white font-semibold after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white after:rounded-full'
-                    : 'text-gray-300/90'
+                    ? 'bg-white text-slate-950 font-bold'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {link.name}
               </button>
             ))}
           </nav>
-
-          {/* Center Logo Image */}
-          <div
-            className="flex items-center cursor-pointer select-none group py-1"
-            onClick={() => onNavClick('home')}
-          >
-            <img
-              src="/Assets/logo.png"
-              alt="Dreamscape Designs Logo"
-              className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300 filter drop-shadow-md"
-            />
-          </div>
-
-          {/* Right Contact Info & CTA Button */}
-          <div className="hidden lg:flex items-center space-x-6 text-sm text-gray-200">
-            {/* Location */}
-            <div className="flex items-center space-x-2 text-xs font-medium text-gray-300/90 hover:text-white transition-colors cursor-pointer">
-              <MapPin className="w-3.5 h-3.5 text-white/80" />
-              <span>Kurunegala, Sri Lanka</span>
-            </div>
-
-            {/* Divider */}
-            <span className="w-1 h-1 rounded-full bg-white/20" />
-
-            {/* Phone */}
-            <a
-              href="tel:+94779962051"
-              className="flex items-center space-x-2 text-xs font-medium text-gray-300/90 hover:text-white transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5 text-white/80" />
-              <span>+94 77 996 2051</span>
-            </a>
-
-            {/* Schedule A Visit Button */}
-            <button
-              onClick={onScheduleClick}
-              className="bg-white text-gray-950 font-semibold px-5 py-2.5 rounded-full text-xs hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all duration-200 shadow-lg shadow-white/10 flex items-center space-x-1.5"
-            >
-              <span>Schedule A Visit</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex lg:hidden items-center space-x-3">
-            <button
-              onClick={onScheduleClick}
-              className="bg-white text-gray-950 font-semibold px-3 py-1.5 rounded-full text-xs hover:bg-gray-100 transition-all"
-            >
-              Visit
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-300 hover:text-white rounded-lg focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden backdrop-blur-xl bg-black/90 border-b border-white/10 animate-fade-in px-6 py-6 space-y-5">
-          <nav className="flex flex-col space-y-4">
-            {navLinks.map((link) => (
-              <button
-                key={link.id}
-                onClick={() => handleLinkClick(link.id)}
-                className="text-left text-base font-medium text-gray-200 hover:text-white py-1 border-b border-white/5"
-              >
-                {link.name}
-              </button>
-            ))}
-          </nav>
-
-          <div className="pt-4 space-y-3 text-xs text-gray-400">
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-white/70" />
-              <span>Kurunegala, Sri Lanka</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-white/70" />
-              <a href="tel:+94779962051" className="hover:text-white">+94 77 996 2051</a>
-            </div>
-          </div>
         </div>
       )}
     </header>

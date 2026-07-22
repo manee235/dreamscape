@@ -98,21 +98,25 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
     }
     const rafId = requestAnimationFrame(raf);
 
-    // Synchronize Lenis with GSAP ScrollTrigger
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
+    lenis.on('scroll', () => {
+      ScrollTrigger.update();
     });
+
+    const tickerCb = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(tickerCb);
     gsap.ticker.lagSmoothing(0);
 
     // GSAP ScrollTrigger with PINNING: pins container while scrubbing video sequence
     const trigger = ScrollTrigger.create({
       trigger: containerRef.current,
       start: 'top top',
-      end: '+=350%', // Pin for 3.5 viewport heights of scroll distance
+      end: '+=250%',
       pin: true,
       pinSpacing: true,
-      scrub: 0.15, // Smooth scrubbing
+      scrub: 0.1,
       onUpdate: (self) => {
         const progress = self.progress;
         const index = Math.floor(progress * (totalFrames - 1));
@@ -125,8 +129,15 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
       },
     });
 
+    // Refresh ScrollTrigger to ensure total page height includes WebPageSections below
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 150);
+
     return () => {
+      clearTimeout(refreshTimer);
       trigger.kill();
+      gsap.ticker.remove(tickerCb);
       lenis.destroy();
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', updateCanvasBounds);
@@ -168,7 +179,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-screen bg-black overflow-hidden"
+      className="relative w-full h-screen bg-black overflow-hidden flex items-center justify-center"
     >
       {/* Loading Overlay */}
       {!isInitialReady && (
@@ -195,18 +206,12 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
         </div>
       )}
 
-      {/* Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover block"
-      />
-
-      {/* Floating Scroll Progress Indicator Badge bottom right */}
-      <div className="absolute bottom-6 right-6 z-30 pointer-events-none bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 text-[10px] font-mono text-gray-300 flex items-center space-x-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-        <span>FRAME: {String(currentFrameIndex + 1).padStart(3, '0')} / {totalFrames}</span>
-        <span className="text-gray-500">|</span>
-        <span>{Math.round(scrollProgress * 100)}%</span>
+      {/* Pure Fullscreen Canvas (No Curved Frame) */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full object-cover block"
+        />
       </div>
 
       {/* Children Overlays */}
