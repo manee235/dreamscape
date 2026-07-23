@@ -17,7 +17,7 @@ export const App: React.FC = () => {
   const handleNavClick = (section: string) => {
     setActiveSection(section);
 
-    // Smooth scroll to the section by id (sections defined in ViktorOddyPage)
+    // Smooth scroll to the section by id
     const sectionEl = document.getElementById(section);
     if (sectionEl) {
       sectionEl.scrollIntoView({ behavior: 'smooth' });
@@ -27,8 +27,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-white text-gray-900 selection:bg-[#051A24] selection:text-white">
-      {/* Global Green SVG Fill Website Loading Screen */}
+    <div className="relative min-h-screen bg-white text-slate-900 selection:bg-emerald-500 selection:text-white">
+      {/* Global SVG Fill Loading Screen */}
       <LoadingScreen />
 
       {/* Navbar — reveals as canvas animation completes */}
@@ -47,7 +47,7 @@ export const App: React.FC = () => {
         >
           {(progress) => (
             <>
-              {/* Hero Title & Subtitle — reveals at final frames */}
+              {/* Hero Title & Subtitle */}
               <HeroOverlay scrollProgress={progress} />
 
               {/* Story Narrative Overlays */}
@@ -61,7 +61,7 @@ export const App: React.FC = () => {
         </CanvasVideoScrubber>
       </main>
 
-      {/* Viktor Oddy Landing Page Sections */}
+      {/* Dreamscape Designs Landing Page Sections */}
       <WebPageSections
         onScheduleClick={() => setActiveModal('schedule')}
         onGalleryClick={() => setActiveModal('gallery')}

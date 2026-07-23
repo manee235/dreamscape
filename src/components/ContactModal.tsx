@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, MapPin, Phone, MessageSquare, Mail, Send, CheckCircle2, ChevronRight, ChevronLeft, User, Home, Wallet, SendHorizontal } from 'lucide-react';
+import { X, MessageSquare, Mail, Send, CheckCircle2, ChevronRight, ChevronLeft, User, Home, Wallet, SendHorizontal } from 'lucide-react';
 
 interface ContactModalProps {
   isOpen: boolean;

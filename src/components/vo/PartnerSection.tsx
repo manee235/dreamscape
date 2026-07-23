@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useInViewAnimation } from '../../hooks/useInViewAnimation';
+import { ArrowUpRight } from 'lucide-react';
 
 const MARQUEE_IMAGES = [
   'https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif',
@@ -24,7 +25,11 @@ interface FloatingGif {
 
 let gifIdCounter = 0;
 
-export const PartnerSection: React.FC = () => {
+interface PartnerSectionProps {
+  onContactClick?: () => void;
+}
+
+export const PartnerSection: React.FC<PartnerSectionProps> = ({ onContactClick }) => {
   const { ref: sectionRef, inView } = useInViewAnimation(0.1);
   const containerRef = useRef<HTMLDivElement>(null);
   const gifsRef = useRef<FloatingGif[]>([]);
@@ -113,11 +118,11 @@ export const PartnerSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="w-full py-12 px-6">
+    <section className="w-full py-12 px-6 font-poppins">
       <div
         ref={containerRef}
         onMouseMove={handleMouseMove}
-        className="relative max-w-7xl mx-auto py-48 rounded-[40px] overflow-hidden flex flex-col items-center justify-center cursor-crosshair"
+        className="relative max-w-7xl mx-auto py-36 sm:py-48 rounded-[40px] overflow-hidden flex flex-col items-center justify-center cursor-crosshair border border-slate-200/80"
         style={{ boxShadow: '0 2px 40px rgba(0,0,0,0.06)', background: 'white' }}
       >
         {/* Background subtle texture */}
@@ -125,37 +130,44 @@ export const PartnerSection: React.FC = () => {
           background: 'radial-gradient(ellipse at center, rgba(5,26,36,0.02) 0%, transparent 70%)'
         }} />
 
-        {/* Heading */}
+        {/* Main Section Content */}
         <div
           ref={sectionRef as React.RefObject<HTMLDivElement>}
-          className={`relative z-20 text-center ${inView ? 'animate-fade-in-up' : 'opacity-0'}`}
+          className={`relative z-20 text-center max-w-2xl px-6 ${inView ? 'animate-fade-in-up' : 'opacity-0'}`}
           style={{ animationDelay: '0.1s' }}
         >
+          {/* Tag */}
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-600 mb-4 block">
+            DREAMSCAPE DESIGNS
+          </span>
+
+          {/* Heading */}
           <h2
-            className="text-[48px] md:text-[64px] lg:text-[80px] text-[#0D212C] mb-12 tracking-tight leading-[1.05]"
+            className="text-[44px] sm:text-[64px] lg:text-[76px] text-[#0D212C] mb-6 tracking-tight leading-[1.05] font-bold"
             style={{ fontFamily: "'PP Mondwest', Georgia, serif" }}
           >
             Partner with us
           </h2>
 
-          {/* CTA button */}
+          {/* Catchy Subtitle */}
+          <p className="text-sm sm:text-base text-slate-500 font-medium leading-relaxed mb-10 max-w-xl mx-auto">
+            Transforming your architectural vision into living reality. Let’s craft your bespoke house plans and 3D elevation renderings together.
+          </p>
+
+          {/* Solid Dark CTA Button (Without white circle) */}
           <button
-            onClick={() => {
-              document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 cursor-pointer"
+            onClick={onContactClick}
+            className="inline-flex items-center gap-3 rounded-full px-8 py-4 text-xs font-bold uppercase tracking-wider text-white transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xl"
             style={{
               backgroundColor: '#051A24',
               boxShadow:
-                '0 1px 2px 0 rgba(5,26,36,0.1), 0 4px 4px 0 rgba(5,26,36,0.09), 0 9px 6px 0 rgba(5,26,36,0.05), 0 17px 7px 0 rgba(5,26,36,0.01), 0 26px 7px 0 rgba(5,26,36,0), inset 0 2px 8px 0 rgba(255,255,255,0.5)',
+                '0 1px 2px 0 rgba(5,26,36,0.1), 0 4px 4px 0 rgba(5,26,36,0.09), 0 9px 6px 0 rgba(5,26,36,0.05), 0 17px 7px 0 rgba(5,26,36,0.01), 0 26px 7px 0 rgba(5,26,36,0), inset 0 2px 8px 0 rgba(255,255,255,0.2)',
             }}
           >
-            <img
-              src="/Assets/logo.png"
-              alt="Dreamscape Designs Logo"
-              className="w-8 h-8 rounded-full object-contain bg-white p-1"
-            />
-            Start chat with Maneesh Amindu
+            <span className="font-poppins tracking-wider font-bold">START YOUR PROJECT TODAY</span>
+            <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
           </button>
         </div>
       </div>

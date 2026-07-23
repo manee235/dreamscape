@@ -23,8 +23,9 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [isInitialReady, setIsInitialReady] = useState<boolean>(false);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
-  const [currentFrameIndex, setCurrentFrameIndex] = useState<number>(0);
 
+  const targetFrameRef = useRef<number>(0);
+  const currentFrameRef = useRef<number>(0);
   const lastDrawnFrameRef = useRef<number>(-1);
   const animFrameIdRef = useRef<number | null>(null);
 
@@ -38,7 +39,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
       filenameSuffix: '.jpg',
       totalFrames,
       padLength: 3,
-      initialChunkSize: 15,
+      initialChunkSize: 20,
     });
 
     managerRef.current = manager;
@@ -77,7 +78,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
     lastDrawnFrameRef.current = -1;
   }, []);
 
-  // Set up Lenis & GSAP ScrollTrigger with Pinning
+  // Set up Lenis & GSAP ScrollTrigger with Pinning and Lerp Smoothing
   useEffect(() => {
     if (!isInitialReady || !containerRef.current) return;
 
@@ -109,27 +110,26 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
     gsap.ticker.add(tickerCb);
     gsap.ticker.lagSmoothing(0);
 
-    // GSAP ScrollTrigger with PINNING: pins container while scrubbing video sequence
+    // GSAP ScrollTrigger with lerp scrub to eliminate flickering/lag
     const trigger = ScrollTrigger.create({
       trigger: containerRef.current,
       start: 'top top',
       end: '+=250%',
       pin: true,
       pinSpacing: true,
-      scrub: 0.1,
+      scrub: 0.6, // Smooth lerp delay for 60 FPS video scrubbing
       onUpdate: (self) => {
         const progress = self.progress;
         const index = Math.floor(progress * (totalFrames - 1));
         
+        targetFrameRef.current = index;
         setScrollProgress(progress);
-        setCurrentFrameIndex(index);
         if (onProgressUpdate) {
           onProgressUpdate(progress, index);
         }
       },
     });
 
-    // Refresh ScrollTrigger to ensure total page height includes WebPageSections below
     const refreshTimer = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 150);
@@ -144,23 +144,27 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
     };
   }, [isInitialReady, updateCanvasBounds, onProgressUpdate]);
 
-  // RequestAnimationFrame Render Loop
+  // High-performance RequestAnimationFrame Lerp Render Loop
   useEffect(() => {
     const renderLoop = () => {
       const canvas = canvasRef.current;
       const manager = managerRef.current;
 
       if (canvas && manager) {
+        // Lerp frame position smoothly to prevent stuttering/flicker
+        currentFrameRef.current += (targetFrameRef.current - currentFrameRef.current) * 0.2;
+        const renderIndex = Math.round(currentFrameRef.current);
+
         const ctx = canvas.getContext('2d');
-        if (ctx && currentFrameIndex !== lastDrawnFrameRef.current) {
+        if (ctx && renderIndex !== lastDrawnFrameRef.current) {
           const dpr = Math.min(window.devicePixelRatio || 1, 2);
           const virtualCanvas = {
             width: canvas.width / dpr,
             height: canvas.height / dpr,
           } as HTMLCanvasElement;
 
-          manager.render(ctx, virtualCanvas, currentFrameIndex);
-          lastDrawnFrameRef.current = currentFrameIndex;
+          manager.render(ctx, virtualCanvas, renderIndex);
+          lastDrawnFrameRef.current = renderIndex;
         }
       }
 
@@ -174,7 +178,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
         cancelAnimationFrame(animFrameIdRef.current);
       }
     };
-  }, [currentFrameIndex]);
+  }, []);
 
   return (
     <div
@@ -194,7 +198,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
 
           <div className="w-64 h-1.5 bg-gray-800 rounded-full overflow-hidden relative">
             <div
-              className="h-full bg-gradient-to-r from-amber-400 via-white to-sky-400 transition-all duration-200"
+              className="h-full bg-gradient-to-r from-emerald-400 via-white to-sky-400 transition-all duration-200"
               style={{ width: `${Math.round(loadingProgress * 100)}%` }}
             />
           </div>
@@ -206,7 +210,7 @@ export const CanvasVideoScrubber: React.FC<CanvasVideoScrubberProps> = ({
         </div>
       )}
 
-      {/* Pure Fullscreen Canvas (No Curved Frame) */}
+      {/* Pure Fullscreen Canvas */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <canvas
           ref={canvasRef}

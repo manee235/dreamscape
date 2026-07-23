@@ -1,212 +1,227 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Sparkles, CheckCircle2 } from 'lucide-react';
-
-interface FeatureItem {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-}
-
-const FEATURES: FeatureItem[] = [
-  {
-    id: 1,
-    title: 'Crafted to Perfection',
-    description:
-      'Every element is intentionally designed with unmatched attention to detail. From premium materials to flawless finishes, each home reflects timeless craftsmanship and enduring quality.',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85',
-  },
-  {
-    id: 2,
-    title: 'Designed Around You',
-    description:
-      'Tailored architectural layouts designed around your lifestyle, family needs, and spatial flow, ensuring every square foot serves a meaningful purpose.',
-    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85',
-  },
-  {
-    id: 3,
-    title: 'Iconic Locations',
-    description:
-      'Prime sites in Kurunegala and across Sri Lanka optimized for cross-ventilation, natural sunlight, and harmonious integration with the surrounding landscape.',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85',
-  },
-  {
-    id: 4,
-    title: 'Innovation Meets Elegance',
-    description:
-      'Modern 3D BIM visualization, structural engineering precision, and sustainable smart living integration built into every blueprint.',
-    image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85',
-  },
-  {
-    id: 5,
-    title: 'A Seamless Journey',
-    description:
-      'From initial concept sketches to approval drawings and site execution consulting — we guide you through every milestone with complete clarity.',
-    image: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=1200&q=85',
-  },
-];
+import React from 'react';
+import { Sparkles, CheckCircle2, Home, Compass, Leaf, ShieldCheck } from 'lucide-react';
 
 export const SyncServicesSection: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const totalScrollable = rect.height - windowHeight;
-
-      if (totalScrollable <= 0) return;
-
-      // Calculate progress ratio (0 to 1) while pinned
-      const current = -rect.top;
-      const ratio = Math.max(0, Math.min(1, current / totalScrollable));
-      setScrollProgress(ratio);
-
-      // Determine active feature index based on ratio
-      const idx = Math.min(FEATURES.length - 1, Math.floor(ratio * FEATURES.length));
-      setActiveIndex(idx);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <div
-      id="services"
-      ref={containerRef}
-      className="relative w-full bg-white"
-      style={{ height: `${FEATURES.length * 75}vh` }}
-    >
-      {/* Pinned Sticky Section Container */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-center px-4 sm:px-8 lg:px-16 max-w-7xl mx-auto overflow-hidden">
+    <section id="services" className="w-full py-28 px-6 sm:px-10 lg:px-16 bg-white text-slate-900 font-poppins">
+      <div className="max-w-7xl mx-auto flex flex-col items-center">
         
-        {/* Top Header */}
-        <div className="text-center mb-8 lg:mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-mono font-semibold uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Architectural Excellence</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
-            Exceptional Living Crafted Through Every Detail
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 font-normal mt-2 max-w-2xl mx-auto">
-            Every detail is crafted to elevate your living experience with style, comfort, and purpose.
-          </p>
-
-          {/* Sync Progress Bar */}
-          <div className="w-48 h-1 bg-slate-100 rounded-full mx-auto mt-4 overflow-hidden border border-slate-200">
-            <div
-              className="h-full bg-emerald-500 transition-all duration-150 ease-out shadow-[0_0_8px_#10B981]"
-              style={{ width: `${Math.round(scrollProgress * 100)}%` }}
-            />
-          </div>
+        {/* Top Centered Pill Tag */}
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold tracking-wider uppercase mb-6 shadow-sm">
+          <span>FEATURES</span>
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
         </div>
 
-        {/* Main Grid: Left Synced Image + Right Animated Features */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          {/* Left Side: Pinned Synced House Image Container */}
-          <div className="lg:col-span-6 relative h-[320px] sm:h-[420px] lg:h-[480px] rounded-[32px] overflow-hidden shadow-2xl border border-slate-100 bg-slate-950 group">
-            {FEATURES.map((feat, idx) => (
-              <div
-                key={feat.id}
-                className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${
-                  activeIndex === idx
-                    ? 'opacity-100 scale-100 z-10'
-                    : 'opacity-0 scale-105 pointer-events-none z-0'
-                }`}
-              >
-                <img
-                  src={feat.image}
-                  alt={feat.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+        {/* Main Headline */}
+        <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 text-center max-w-3xl leading-[1.15] mb-4">
+          Finally bring your dream home vision to life
+        </h2>
 
-                {/* Floating Image Tag Badge */}
-                <div className="absolute bottom-6 left-6 right-6 z-20 flex items-center justify-between p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-white/80 shadow-xl">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                    <span className="text-xs font-bold text-slate-900 font-mono uppercase tracking-wider">
-                      Feature 0{idx + 1} / 0{FEATURES.length}
-                    </span>
+        {/* Subtitle */}
+        <p className="text-sm sm:text-base md:text-lg text-slate-500 text-center max-w-2xl font-normal leading-relaxed mb-16">
+          Seamlessly plan, visualize, and execute your residential build with expert architectural house planning, 3D renderings, and structural consulting.
+        </p>
+
+        {/* 2x2 Bento Grid Cards Container (Exact match to screenshot UI layout) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+          
+          {/* Card 1: Customer-Centric Planning */}
+          <div className="group rounded-[32px] bg-slate-50 border border-slate-200/80 p-8 sm:p-10 flex flex-col justify-between hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            
+            {/* Top Interactive Mockup Display */}
+            <div className="w-full h-56 sm:h-64 rounded-2xl bg-white border border-slate-200/80 p-6 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
+              
+              {/* Floating Customer Consultation Cards (Screenshot style) */}
+              <div className="flex items-center gap-4 max-w-md w-full">
+                
+                {/* Person Card 1 */}
+                <div className="flex-1 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center shadow-xs">
+                  <div className="w-10 h-10 rounded-full overflow-hidden mx-auto mb-2 border border-slate-300">
+                    <img
+                      src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1"
+                      alt="Architect"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <span className="text-xs font-semibold text-slate-700 font-mono">
-                    Dreamscape Designs
+                  <span className="block text-xs font-bold text-slate-900">Maneesh A.</span>
+                  <span className="block text-[10px] text-slate-400 font-mono">Principal Architect</span>
+                  <div className="mt-2 flex flex-wrap gap-1 justify-center">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-semibold">House Plan</span>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-[9px] font-semibold">2D Layout</span>
+                  </div>
+                </div>
+
+                {/* Person Card 2 (Active Center) */}
+                <div className="flex-1 p-4 rounded-2xl bg-white border-2 border-emerald-500 shadow-xl text-center transform -translate-y-2">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mx-auto mb-2 border-2 border-emerald-400">
+                    <img
+                      src="https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1"
+                      alt="Homeowner"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="block text-xs font-extrabold text-slate-900">Client Review</span>
+                  <span className="block text-[10px] text-emerald-600 font-bold font-mono">1-on-1 Session</span>
+                  <div className="mt-2 flex flex-wrap gap-1 justify-center">
+                    <span className="px-2.5 py-0.5 rounded-md bg-emerald-500 text-white text-[9px] font-bold">Approved</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Bottom Text Content */}
+            <div className="mt-8">
+              <div className="flex items-center space-x-2.5 mb-2">
+                <div className="p-2 rounded-xl bg-slate-200 text-slate-900">
+                  <Home className="w-4 h-4" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Customer-Centric House Planning
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed">
+                Personalized 1-on-1 house layout consultations tailored around your family lifestyle, spatial flow, land topology, and municipal requirements.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Card 2: Modern 3D Elevation & Renderings */}
+          <div className="group rounded-[32px] bg-slate-50 border border-slate-200/80 p-8 sm:p-10 flex flex-col justify-between hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            
+            {/* Top Interactive Mockup Display */}
+            <div className="w-full h-56 sm:h-64 rounded-2xl bg-white border border-slate-200/80 p-6 flex flex-col justify-center shadow-sm relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
+              
+              {/* Checklist & Plan Execution Card (Screenshot style) */}
+              <div className="max-w-xs mx-auto w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-bold text-slate-900">3D Visualization Pipeline</span>
+                  <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    100% Ready
                   </span>
                 </div>
+
+                <div className="flex items-center space-x-2.5 text-xs text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>01. 3D Exterior Villa Elevation</span>
+                </div>
+
+                <div className="flex items-center space-x-2.5 text-xs text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>02. Photorealistic Interior Renderings</span>
+                </div>
+
+                <div className="flex items-center space-x-2.5 text-xs text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>03. Material & Lighting Walkthrough</span>
+                </div>
               </div>
-            ))}
+
+            </div>
+
+            {/* Bottom Text Content */}
+            <div className="mt-8">
+              <div className="flex items-center space-x-2.5 mb-2">
+                <div className="p-2 rounded-xl bg-slate-200 text-slate-900">
+                  <Compass className="w-4 h-4" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Modern Architectural 3D Designs
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed">
+                Photorealistic 3D interior and exterior renderings allowing you to experience every room, texture, and daylight angle before construction begins.
+              </p>
+            </div>
+
           </div>
 
-          {/* Right Side: Interactive Synced Feature Items List */}
-          <div className="lg:col-span-6 flex flex-col justify-center space-y-4 pl-0 lg:pl-6">
-            {FEATURES.map((feat, idx) => {
-              const isActive = activeIndex === idx;
-              return (
-                <div
-                  key={feat.id}
-                  onClick={() => setActiveIndex(idx)}
-                  className={`p-5 sm:p-6 rounded-2xl transition-all duration-500 cursor-pointer border ${
-                    isActive
-                      ? 'bg-slate-900 text-white border-slate-800 shadow-xl scale-[1.02] translate-x-2'
-                      : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100/80'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                          isActive
-                            ? 'bg-emerald-400 shadow-[0_0_10px_#10B981] scale-125'
-                            : 'bg-slate-300'
-                        }`}
-                      />
-                      <h3
-                        className={`text-lg sm:text-xl font-bold tracking-tight transition-colors ${
-                          isActive ? 'text-white' : 'text-slate-800'
-                        }`}
-                      >
-                        {feat.title}
-                      </h3>
-                    </div>
+          {/* Card 3: Eco-Friendly & Sustainable Design */}
+          <div className="group rounded-[32px] bg-slate-50 border border-slate-200/80 p-8 sm:p-10 flex flex-col justify-between hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            
+            {/* Top Interactive Mockup Display */}
+            <div className="w-full h-56 sm:h-64 rounded-2xl bg-white border border-slate-200/80 p-6 flex items-center justify-center shadow-sm relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
+              
+              <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                  <Leaf className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                  <span className="block text-xs font-bold text-emerald-950">Cross Ventilation</span>
+                  <span className="block text-[10px] text-emerald-700">Natural Cooling</span>
+                </div>
 
-                    <span
-                      className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full ${
-                        isActive
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      0{idx + 1}
-                    </span>
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+                  <Sparkles className="w-5 h-5 text-amber-600 mx-auto mb-1" />
+                  <span className="block text-xs font-bold text-amber-950">Sunlight Paths</span>
+                  <span className="block text-[10px] text-amber-700">Daylight Passive Energy</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Text Content */}
+            <div className="mt-8">
+              <div className="flex items-center space-x-2.5 mb-2">
+                <div className="p-2 rounded-xl bg-slate-200 text-slate-900">
+                  <Leaf className="w-4 h-4 text-emerald-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Eco-Friendly & Sustainable Living
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed">
+                Energy-efficient layouts designed to maximize natural ventilation, tropical airflow, and sun paths customized for Sri Lankan climatic conditions.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Card 4: Structural Engineering & Consulting */}
+          <div className="group rounded-[32px] bg-slate-50 border border-slate-200/80 p-8 sm:p-10 flex flex-col justify-between hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            
+            {/* Top Interactive Mockup Display */}
+            <div className="w-full h-56 sm:h-64 rounded-2xl bg-white border border-slate-200/80 p-6 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
+              
+              <div className="w-full max-w-xs bg-slate-900 text-white p-4 rounded-2xl shadow-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <span className="text-xs font-bold font-mono text-emerald-400">STRUCTURAL BARS</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Council Blueprints:</span>
+                    <span className="text-emerald-400 font-bold">100% Passed</span>
                   </div>
-
-                  {/* Expandable Paragraph for Active Item */}
-                  <div
-                    className={`grid transition-all duration-500 ease-in-out ${
-                      isActive ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0 mt-0'
-                    }`}
-                  >
-                    <div className="overflow-hidden">
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal pt-1 border-t border-slate-800/80">
-                        {feat.description}
-                      </p>
-                    </div>
+                  <div className="flex justify-between">
+                    <span>Site Visits & Audits:</span>
+                    <span className="text-emerald-400 font-bold">Active</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+            </div>
+
+            {/* Bottom Text Content */}
+            <div className="mt-8">
+              <div className="flex items-center space-x-2.5 mb-2">
+                <div className="p-2 rounded-xl bg-slate-200 text-slate-900">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Structural Engineering & Consulting
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed">
+                Complete structural calculation reports, municipal council approval drawings, and on-site construction guidance to guarantee building safety.
+              </p>
+            </div>
+
           </div>
 
         </div>
+
       </div>
-    </div>
+    </section>
   );
 };

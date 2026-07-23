@@ -1,226 +1,266 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useInViewAnimation } from '../../hooks/useInViewAnimation';
+import React, { useEffect, useRef, useState } from 'react';
+import { ReviewModal } from '../ReviewModal';
+import { supabase } from '../../lib/supabase';
+
+interface SupabaseTestimonialRow {
+  id: string;
+  testimonial_name: string;
+  description: string;
+  profile_picture: string;
+  rating?: number;
+  created_at?: string;
+}
 
 interface Testimonial {
-  id: number;
+  id: string | number;
   quote: string;
   author: string;
   role: string;
+  date: string;
   avatar: string;
 }
 
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 1,
-    quote:
-      'Dreamscape Designs transformed our rough floor plan sketch into an extraordinary 3D elevation. Maneesh Amindu provided invaluable advice on natural ventilation and spatial layout.',
-    author: 'Marcus Anderson',
-    role: 'Homeowner, Kurunegala',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
-  },
-  {
-    id: 2,
-    quote:
-      'Maneesh completed our two-storey house plans ahead of schedule. The council approval drawings passed without a single alteration required!',
-    author: 'Alex Perera',
-    role: 'Property Owner, Kandy',
-    avatar: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
-  },
-  {
-    id: 3,
-    quote:
-      'Working with Dreamscape Designs was seamless. Their 3D walkthrough renderings gave us complete confidence before breaking ground on our villa project.',
-    author: 'James Mitchell',
-    role: 'Developer, Southern Coast',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
-  },
-  {
-    id: 4,
-    quote:
-      'The architectural aesthetics and interior planning exceeded our expectations. Clean, modern, and perfectly suited to our land topology.',
-    author: 'Rachel Foster',
-    role: 'Residential Client, Colombo',
-    avatar: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
-  },
-  {
-    id: 5,
-    quote:
-      'Outstanding consultation service. Maneesh saved us significantly on structural costs while preserving the open-concept design we envisioned.',
-    author: 'David Zhang',
-    role: 'Homeowner, Galle',
-    avatar: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
-  },
-];
-
-// Triple for infinite scroll
-const ITEMS = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
-const CARD_WIDTH_DESKTOP = 427.5;
-const CARD_GAP = 24;
-
 export const TestimonialCarousel: React.FC = () => {
-  const { ref: headerRef, inView: headerInView } = useInViewAnimation(0.1);
-  const [current, setCurrent] = useState(TESTIMONIALS.length); // start at middle copy
-  const [transitioning, setTransitioning] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const goTo = useCallback((index: number) => {
-    setTransitioning(true);
-    setCurrent(index);
+  // Fetch live testimonials directly from Supabase dreamscape_testimonials table
+  useEffect(() => {
+    const fetchSupabaseTestimonials = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('dreamscape_testimonials')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Supabase fetch error:', error);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const mapped: Testimonial[] = (data as SupabaseTestimonialRow[]).map((item) => {
+            const dateObj = new Date(item.created_at || Date.now());
+            const formattedDate = `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${dateObj.getFullYear()}`;
+            return {
+              id: item.id,
+              quote: item.description,
+              author: item.testimonial_name,
+              role: 'CLIENT',
+              date: formattedDate,
+              avatar: item.profile_picture || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&dpr=1',
+            };
+          });
+          setTestimonials(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch testimonials from Supabase:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSupabaseTestimonials();
   }, []);
 
-  const next = useCallback(() => {
-    goTo(current + 1);
-  }, [current, goTo]);
+  const handleAddReview = (newReview: {
+    quote: string;
+    author: string;
+    role: string;
+    date: string;
+    avatar: string;
+  }) => {
+    const created: Testimonial = {
+      id: Date.now(),
+      ...newReview,
+    };
+    setTestimonials((prev) => [created, ...prev]);
+    setActiveIndex(0);
+  };
 
-  const prev = useCallback(() => {
-    goTo(current - 1);
-  }, [current, goTo]);
-
-  // Auto scroll
+  // Moving particles canvas effect in background
   useEffect(() => {
-    if (isHovered) return;
-    intervalRef.current = setInterval(() => next(), 3000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isHovered, next]);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  // Handle infinite loop: when transition ends, snap without animation
-  useEffect(() => {
-    const len = TESTIMONIALS.length;
-    if (current < len) {
-      setTimeout(() => {
-        setTransitioning(false);
-        setCurrent(current + len);
-      }, 820);
-    } else if (current >= len * 2) {
-      setTimeout(() => {
-        setTransitioning(false);
-        setCurrent(current - len);
-      }, 820);
-    }
-  }, [current]);
+    let animationFrameId: number;
+    let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
+    let height = (canvas.height = canvas.parentElement?.clientHeight || 450);
 
-  // Re-enable transition after snap
-  useEffect(() => {
-    if (!transitioning) {
-      const t = setTimeout(() => setTransitioning(true), 50);
-      return () => clearTimeout(t);
-    }
-  }, [transitioning]);
+    const handleResize = () => {
+      if (!canvas || !canvas.parentElement) return;
+      width = canvas.width = canvas.parentElement.clientWidth;
+      height = canvas.height = canvas.parentElement.clientHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    const particles = Array.from({ length: 30 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      size: Math.random() * 2.5 + 1,
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(16, 185, 129, ${0.15 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.8;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="w-full py-20 overflow-hidden">
-      {/* Header row */}
-      <div
-        ref={headerRef as React.RefObject<HTMLDivElement>}
-        className="px-6 md:max-w-4xl md:ml-auto flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12"
-      >
-        <h2
-          className={`text-[32px] md:text-[40px] lg:text-[44px] leading-[1.1] text-[#0D212C] tracking-tight ${headerInView ? 'animate-fade-in-up' : 'opacity-0'}`}
-          style={{ animationDelay: '0.1s' }}
-        >
-          What{' '}
-          <span style={{ fontFamily: "'PP Mondwest', Georgia, serif" }}>builders</span>{' '}
-          say
-        </h2>
+    <section className="relative w-full py-28 px-6 bg-white text-slate-900 overflow-hidden font-poppins flex flex-col items-center justify-center">
+      
+      {/* Background Animated Particle Canvas */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none z-0"
+      />
 
-        <div
-          className={`flex items-center gap-3 ${headerInView ? 'animate-fade-in-up' : 'opacity-0'}`}
-          style={{ animationDelay: '0.2s' }}
-        >
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="w-5 h-5 fill-black text-black" />
-            ))}
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center">
+        
+        {isLoading ? (
+          <div className="py-16 text-xs font-mono text-slate-400 animate-pulse">
+            Loading client testimonials from Supabase database...
           </div>
-          <span className="text-sm font-medium text-[#051A24]">Clutch 5/5</span>
-        </div>
-      </div>
+        ) : activeTestimonial ? (
+          <>
+            {/* Quote Marks & Headline Quote */}
+            <div className="relative my-6 px-8 sm:px-16">
+              <span className="absolute left-0 top-0 text-4xl sm:text-6xl font-serif text-slate-300 font-extrabold select-none">
+                “
+              </span>
 
-      {/* Carousel + controls */}
-      <div
-        className="relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Prev / Next buttons */}
-        <div className="absolute right-6 -top-16 flex gap-3 z-10">
-          <button
-            onClick={prev}
-            className="w-12 h-12 rounded-full bg-white flex items-center justify-center transition-shadow hover:shadow-md"
-            style={{ border: '1px solid rgba(13,33,44,0.2)' }}
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="w-5 h-5 text-[#0D212C]" />
-          </button>
-          <button
-            onClick={next}
-            className="w-12 h-12 rounded-full bg-white flex items-center justify-center transition-shadow hover:shadow-md"
-            style={{ border: '1px solid rgba(13,33,44,0.2)' }}
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-5 h-5 text-[#0D212C]" />
-          </button>
-        </div>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.25] transition-all duration-500">
+                {activeTestimonial.quote}
+              </h2>
 
-        {/* Track */}
-        <div ref={containerRef} className="overflow-visible pl-6">
-          <div
-            className="flex"
-            style={{
-              gap: CARD_GAP,
-              transform: `translateX(calc(-${current} * (${CARD_WIDTH_DESKTOP}px + ${CARD_GAP}px)))`,
-              transition: transitioning
-                ? 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-                : 'none',
-            }}
-          >
-            {ITEMS.map((t, i) => {
-              const isActive = i === current;
-              return (
-                <div
-                  key={`${t.id}-${i}`}
-                  className="shrink-0 bg-white rounded-[32px] md:rounded-[40px] px-6 md:pl-10 md:pr-24 py-8 flex flex-col gap-6"
-                  style={{
-                    width: `min(${CARD_WIDTH_DESKTOP}px, calc(100vw - 48px))`,
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                    opacity: isActive ? 1 : 0.8,
-                    transform: isActive ? 'scale(1)' : 'scale(0.98)',
-                    transition: 'opacity 0.4s ease, transform 0.4s ease',
-                  }}
-                >
-                  {/* SVG quote mark */}
-                  <svg width="32" height="28" viewBox="0 0 32 28" fill="none">
-                    <path
-                      d="M0 28V17.6C0 11.627 2.32267 6.81733 6.968 3.188 11.6133 -0.440667 17.4507 -1.064 24.48 1.316L22.4 6.664C19.168 5.72933 16.3093 5.65333 13.824 6.44533C11.3387 7.16267 9.408 8.744 8.032 11.188H14.4V28H0ZM17.6 28V17.6C17.6 11.627 19.9227 6.81733 24.568 3.188C29.2133 -0.440667 35.0507 -1.064 42.08 1.316L40 6.664C36.768 5.72933 33.9093 5.65333 31.424 6.44533C28.9387 7.16267 27.008 8.744 25.632 11.188H32V28H17.6Z"
-                      fill="#0D212C"
-                      fillOpacity="0.12"
-                    />
-                  </svg>
+              <span className="absolute right-0 bottom-0 text-4xl sm:text-6xl font-serif text-slate-300 font-extrabold select-none">
+                ”
+              </span>
+            </div>
 
-                  {/* Quote text */}
-                  <p className="text-base text-[#0D212C] leading-relaxed">{t.quote}</p>
+            {/* Date & Role Tag */}
+            <span className="text-[11px] font-mono font-bold tracking-[0.2em] text-slate-400 uppercase mt-4 mb-8">
+              {activeTestimonial.role} • {activeTestimonial.date}
+            </span>
+          </>
+        ) : (
+          <div className="py-12 text-sm text-slate-500 font-medium">
+            No testimonials in Supabase yet. Be the first to leave a review!
+          </div>
+        )}
 
-                  {/* Author */}
-                  <div className="flex items-center gap-3 mt-auto">
-                    <img
-                      src={t.avatar}
-                      alt={t.author}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-semibold text-sm text-[#0D212C]">{t.author}</p>
-                      <p className="text-xs text-[#273C46]">→ {t.role}</p>
+        {/* Dynamic Capsule Avatar Row (Exact match to reference screenshot) */}
+        {testimonials.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-10 min-h-[64px]">
+            {testimonials.map((item, idx) => {
+              const isActive = idx === activeIndex;
+              if (isActive) {
+                return (
+                  /* Expanded Active Capsule with Profile Ring + Bold Name */
+                  <div
+                    key={item.id}
+                    onClick={() => setActiveIndex(idx)}
+                    className="flex items-center space-x-3.5 px-4 py-2 rounded-full bg-slate-950 text-white shadow-2xl transition-all duration-300 transform scale-105 cursor-pointer border border-slate-800"
+                  >
+                    <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-r from-amber-400 via-emerald-400 to-sky-400 flex items-center justify-center shrink-0">
+                      <img
+                        src={item.avatar}
+                        alt={item.author}
+                        className="w-full h-full rounded-full object-cover border border-white"
+                      />
                     </div>
+                    <span className="text-sm sm:text-base font-bold font-poppins text-white pr-2">
+                      {item.author}
+                    </span>
                   </div>
-                </div>
+                );
+              }
+
+              return (
+                /* Unselected Inactive Circular Profile Avatar */
+                <button
+                  key={item.id}
+                  onClick={() => setActiveIndex(idx)}
+                  className="w-11 h-11 rounded-full overflow-hidden border-2 border-slate-200 hover:border-emerald-500 opacity-75 hover:opacity-100 transition-all duration-300 transform hover:scale-110 cursor-pointer shadow-sm"
+                  title={item.author}
+                >
+                  <img
+                    src={item.avatar}
+                    alt={item.author}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
               );
             })}
           </div>
-        </div>
+        )}
+
+        {/* Leave a Review Button */}
+        <button
+          onClick={() => setIsReviewModalOpen(true)}
+          className="px-8 py-3.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          Leave a Review
+        </button>
+
       </div>
+
+      {/* Review Submission Modal */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onAddReview={handleAddReview}
+      />
     </section>
   );
 };

@@ -4,6 +4,7 @@ import { SyncServicesSection } from '../SyncServicesSection';
 import { TestimonialCarousel } from './TestimonialCarousel';
 import { ProjectsSection } from './ProjectsSection';
 import { PartnerSection } from './PartnerSection';
+import { StatsSection } from './StatsSection';
 import { VOFooter } from './VOFooter';
 
 /* ─────────────────────────────────────────────────────────── */
@@ -40,10 +41,11 @@ const MarqueeStrip: React.FC = () => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────── */
-/* MAIN DREAMSCAPE DESIGNS LANDING PAGE                         */
-/* ─────────────────────────────────────────────────────────── */
-export const ViktorOddyPage: React.FC = () => {
+interface ViktorOddyPageProps {
+  onContactClick?: () => void;
+}
+
+export const ViktorOddyPage: React.FC<ViktorOddyPageProps> = ({ onContactClick }) => {
   return (
     <div
       className="relative bg-white text-[#051A24]"
@@ -62,19 +64,22 @@ export const ViktorOddyPage: React.FC = () => {
       {/* 3. SYNCED SCROLL SERVICES SECTION */}
       <SyncServicesSection />
 
-      {/* 4. TESTIMONIAL CAROUSEL */}
+      {/* 4. ANIMATED STATS SECTION */}
+      <StatsSection />
+
+      {/* 5. TESTIMONIAL CAROUSEL */}
       <TestimonialCarousel />
 
-      {/* 5. SELECTED PROJECTS */}
+      {/* 6. SELECTED PROJECTS */}
       <section id="work">
-        <ProjectsSection />
+        <ProjectsSection onStartProject={onContactClick} />
       </section>
 
-      {/* 6. PARTNER CTA */}
-      <PartnerSection />
+      {/* 7. PARTNER CTA */}
+      <PartnerSection onContactClick={onContactClick} />
 
-      {/* 7. FOOTER */}
-      <VOFooter />
+      {/* 8. FOOTER */}
+      <VOFooter onContactClick={onContactClick} />
     </div>
   );
 };

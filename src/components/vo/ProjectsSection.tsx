@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, X } from 'lucide-react';
 import { useInViewAnimation } from '../../hooks/useInViewAnimation';
 
 interface ProjectCardData {
@@ -96,12 +96,6 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onStartProject
   const scrollNext = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({ left: 380, behavior: 'smooth' });
-    }
-  };
-
-  const scrollPrev = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: -380, behavior: 'smooth' });
     }
   };
 
