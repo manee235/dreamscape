@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 
 interface NavbarProps {
-  onScheduleClick: () => void;
-  onContactClick: () => void;
+  onScheduleClick?: () => void;
+  onContactClick?: () => void;
   onNavClick: (section: string) => void;
   activeSection?: string;
-  scrollProgress: number;
+  scrollProgress?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,66 +14,57 @@ export const Navbar: React.FC<NavbarProps> = ({
   onContactClick,
   onNavClick,
   activeSection = 'home',
-  scrollProgress,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Navbar reveals as user scrolls toward final frames (from 40% scroll progress up to 90%)
-  const navOpacity = Math.max(0, Math.min(1, (scrollProgress - 0.40) * 2.0));
-  const navTranslateY = (1 - navOpacity) * -20;
-
   const navLinks = [
     { name: 'Home', id: 'home' },
-    { name: 'Features', id: 'features' },
-    { name: 'Designs', id: 'designs' },
-    { name: 'Contact Us', id: 'contact' },
-    { name: 'Client Portal', id: 'portal' },
+    { name: 'About Us', id: 'about' },
+    { name: 'Services', id: 'services' },
+    { name: 'Selected Work', id: 'work' },
+    { name: 'Contact', id: 'contact' },
   ];
 
   const handleLinkClick = (id: string) => {
     setMobileMenuOpen(false);
     if (id === 'contact') {
-      onContactClick();
+      if (onContactClick) onContactClick();
     } else {
       onNavClick(id);
     }
   };
 
   return (
-    <header
-      className="fixed top-5 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 transition-all duration-300 pointer-events-none"
-      style={{
-        opacity: navOpacity,
-        transform: `translateY(${navTranslateY}px)`,
-        pointerEvents: navOpacity > 0.05 ? 'auto' : 'none',
-      }}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className="fixed top-5 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pointer-events-auto transition-all duration-300">
+      <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3 rounded-full bg-slate-950/85 backdrop-blur-xl border border-white/15 shadow-2xl">
         
-        {/* Left: Brand Logo (Clean, no circular background border) */}
+        {/* Left: Dreamscape Designs Logo + Brand Name */}
         <div
-          className="flex items-center cursor-pointer select-none group py-1"
-          onClick={() => onNavClick('home')}
+          className="flex items-center gap-2.5 cursor-pointer select-none group"
+          onClick={() => handleLinkClick('home')}
         >
           <img
             src="/Assets/logo.png"
             alt="Dreamscape Designs Logo"
-            className="h-9 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300 filter drop-shadow-md"
+            className="h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
           />
+          <span className="text-base font-extrabold tracking-wider text-white uppercase font-sans">
+            DREAMSCAPE
+          </span>
         </div>
 
-        {/* Center: Floating Dark Pill Nav */}
-        <nav className="hidden md:inline-flex items-center p-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-white/10 shadow-2xl space-x-1">
+        {/* Center: Navigation Links */}
+        <nav className="hidden md:flex items-center space-x-1">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
             return (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
-                className={`px-4.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-white text-slate-950 shadow-md scale-105'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    ? 'bg-white text-slate-950 font-bold shadow-md scale-105'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {link.name}
@@ -82,30 +73,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Right: Dark Pill CTA Button with Green Dot */}
-        <div className="hidden md:flex items-center">
+        {/* Right: Start a Chat / Get a Quote CTA Button */}
+        <div className="hidden md:flex items-center space-x-3">
           <button
-            onClick={onScheduleClick}
-            className="inline-flex items-center space-x-2.5 px-5 py-2.5 rounded-full bg-slate-950 text-white text-xs font-semibold hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/10"
+            onClick={onContactClick || onScheduleClick}
+            className="inline-flex items-center space-x-2 px-5 py-2 rounded-full bg-white text-slate-950 hover:bg-emerald-400 font-bold text-xs uppercase tracking-wider transition-all shadow-md group cursor-pointer active:scale-95"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm" />
-            <span>Schedule A Visit</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
+            <span>Start a chat</span>
+            <div className="w-5 h-5 rounded-full bg-slate-900 group-hover:bg-slate-950 text-white flex items-center justify-center transition-colors">
+              <ArrowUpRight className="w-3 h-3" />
+            </div>
           </button>
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile menu toggle */}
         <div className="flex md:hidden items-center space-x-2">
           <button
-            onClick={onScheduleClick}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-950 text-white text-xs font-semibold shadow-md"
+            onClick={onContactClick || onScheduleClick}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-950 bg-white"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>Visit</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Chat
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-slate-950 bg-white/90 backdrop-blur-md rounded-full shadow-md border border-gray-200 focus:outline-none"
+            className="p-2 text-white bg-white/10 rounded-full focus:outline-none"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -115,16 +107,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-3 max-w-sm mx-auto rounded-3xl bg-slate-950 text-white p-5 shadow-2xl border border-white/10 animate-fade-in space-y-3 pointer-events-auto">
+        <div className="md:hidden mt-3 max-w-sm mx-auto rounded-3xl bg-slate-950 text-white p-5 shadow-2xl border border-white/15 animate-fade-in space-y-3 pointer-events-auto">
           <nav className="flex flex-col space-y-1.5">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
-                className={`text-left px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`text-left px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                   activeSection === link.id
                     ? 'bg-white text-slate-950 font-bold'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {link.name}

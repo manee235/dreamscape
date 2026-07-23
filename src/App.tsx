@@ -7,6 +7,7 @@ import { WebPageSections } from './components/WebPageSections';
 import { ScheduleVisitModal } from './components/ScheduleVisitModal';
 import { DesignsGalleryModal } from './components/DesignsGalleryModal';
 import { ContactModal } from './components/ContactModal';
+import { LoadingScreen } from './components/LoadingScreen';
 
 export const App: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'schedule' | 'gallery' | 'contact' | 'portal' | null>(null);
@@ -15,21 +16,22 @@ export const App: React.FC = () => {
 
   const handleNavClick = (section: string) => {
     setActiveSection(section);
-    if (section === 'features') {
-      const featElem = document.getElementById('features');
-      if (featElem) featElem.scrollIntoView({ behavior: 'smooth' });
-    } else if (section === 'designs') {
-      setActiveModal('gallery');
-    } else if (section === 'portal') {
-      setActiveModal('portal');
+
+    // Smooth scroll to the section by id (sections defined in ViktorOddyPage)
+    const sectionEl = document.getElementById(section);
+    if (sectionEl) {
+      sectionEl.scrollIntoView({ behavior: 'smooth' });
     } else if (section === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="relative min-h-screen bg-white text-gray-900 selection:bg-gray-950 selection:text-white">
-      {/* Header / Navbar appears smoothly as user scrolls towards the last frames */}
+    <div className="relative min-h-screen bg-white text-gray-900 selection:bg-[#051A24] selection:text-white">
+      {/* Global Green SVG Fill Website Loading Screen */}
+      <LoadingScreen />
+
+      {/* Navbar — reveals as canvas animation completes */}
       <Navbar
         scrollProgress={scrollProgress}
         activeSection={activeSection}
@@ -45,7 +47,7 @@ export const App: React.FC = () => {
         >
           {(progress) => (
             <>
-              {/* Hero Title & Subtitle strictly matching screenshot - reveals at final frames */}
+              {/* Hero Title & Subtitle — reveals at final frames */}
               <HeroOverlay scrollProgress={progress} />
 
               {/* Story Narrative Overlays */}
@@ -59,7 +61,7 @@ export const App: React.FC = () => {
         </CanvasVideoScrubber>
       </main>
 
-      {/* Web Page Content Sections - Accessible after full image frames scrubbing completes */}
+      {/* Viktor Oddy Landing Page Sections */}
       <WebPageSections
         onScheduleClick={() => setActiveModal('schedule')}
         onGalleryClick={() => setActiveModal('gallery')}

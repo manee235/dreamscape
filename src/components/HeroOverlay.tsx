@@ -1,88 +1,70 @@
 import React from 'react';
-import { ArrowRight, LayoutGrid, Sparkles } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 interface HeroOverlayProps {
   scrollProgress: number;
   onScheduleClick?: () => void;
-  onExploreClick?: () => void;
+  onContactClick?: () => void;
 }
 
 export const HeroOverlay: React.FC<HeroOverlayProps> = ({
   scrollProgress,
   onScheduleClick,
-  onExploreClick,
+  onContactClick,
 }) => {
-  // First image: clean video canvas with simple "Scroll down..." cue.
-  // As user scrubs towards the last image (progress from 0.40 to 0.95), hero titles appear gracefully!
-  const opacity = Math.max(0, Math.min(1, (scrollProgress - 0.40) * 2.0));
-  const translateY = (1 - opacity) * 30;
-
-  // Minimal initial "Scroll down..." prompt in pure white color (visible at start, progress < 0.25)
-  const promptOpacity = Math.max(0, 1 - scrollProgress * 5);
+  // Reveal hero text content seamlessly as video scrub progresses (from 0.25 to 0.85)
+  const opacity = Math.max(0, Math.min(1, (scrollProgress - 0.20) * 2.5));
+  const translateY = (1 - opacity) * 20;
 
   return (
     <>
-      {/* Clean "Scroll down..." Prompt in White Color */}
-      {promptOpacity > 0.01 && (
-        <div
-          className="fixed bottom-10 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center space-y-2 transition-opacity duration-300"
-          style={{ opacity: promptOpacity }}
-        >
-          <span className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-            Scroll down...
-          </span>
-          <div className="w-5 h-9 rounded-full border-2 border-white flex items-start justify-center p-1 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-            <div className="w-1.5 h-2.5 bg-white rounded-full animate-bounce mt-1" />
-          </div>
-        </div>
-      )}
-
-      {/* Hero Overlay - Ultra Clean, Minimalist Luxury Architecture UI (Pro Max UI/UX) */}
+      {/* ── Main Hero UI Overlay (Exact Match to Reference Screenshot Layout using Poppins Font) ── */}
       {opacity > 0.01 && (
         <div
-          className="fixed inset-0 pointer-events-none z-30 flex flex-col justify-center items-center text-center px-4 transition-all duration-200 ease-out"
+          className="fixed inset-0 pointer-events-none z-30 flex flex-col justify-end pb-12 sm:pb-20 px-6 sm:px-12 transition-all duration-300 ease-out"
           style={{
             opacity,
             transform: `translateY(${translateY}px)`,
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
-          <div className="max-w-4xl mx-auto flex flex-col items-center space-y-6 pointer-events-auto">
+          <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-auto">
             
-            {/* Elegant Small Pill Tag */}
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-black/50 text-white backdrop-blur-md border border-white/20 shadow-xl">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span className="text-[11px] font-semibold tracking-[0.25em] uppercase">
-                DREAMS INTO REALITY THROUGH THOUGHTFUL DESIGN
-              </span>
+            {/* Left Column (7 cols): Top Pill Tag + Big Headline */}
+            <div className="lg:col-span-7 flex flex-col items-start space-y-4">
+              
+              {/* Top Pill Tag */}
+              <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-xl">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-medium tracking-wide text-slate-100 font-poppins">
+                  Welcome to Dreamscape Designs
+                </span>
+              </div>
+
+              {/* Main Headline (Poppins Font) */}
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-[1.1] drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] font-poppins">
+                Design your dream home, the right way.
+              </h1>
             </div>
 
-            {/* Main Hero Headline - Ultra Crisp White */}
-            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tight drop-shadow-[0_8px_32px_rgba(0,0,0,0.95)] leading-none font-sans">
-              Designed for You.
-            </h1>
+            {/* Right Column (5 cols): Description Paragraph + Check Availability / Quote Button */}
+            <div className="lg:col-span-5 flex flex-col items-start lg:items-end space-y-5 text-left lg:text-right">
+              
+              <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] max-w-md font-poppins">
+                We specialize in house planning, 3D elevation renderings, interior design, and structural consulting in Kurunegala, Sri Lanka.
+              </p>
 
-            {/* Concise 1-Line Tagline */}
-            <p className="text-sm sm:text-base md:text-lg text-gray-100 max-w-xl mx-auto font-medium drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-              Bespoke glass pavilion sanctuaries & luxury estates in Kurunegala, Sri Lanka.
-            </p>
-
-            {/* Clean Pill Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              {/* Action Button: White pill with circular arrow icon */}
               <button
-                onClick={onScheduleClick}
-                className="px-7 py-3.5 rounded-full bg-slate-950 text-white font-bold text-xs uppercase tracking-wider hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all shadow-2xl border border-white/20 flex items-center space-x-2"
+                onClick={onContactClick || onScheduleClick}
+                className="inline-flex items-center space-x-3 px-6 py-3 rounded-full bg-white text-slate-950 hover:bg-emerald-400 font-semibold text-xs tracking-wider transition-all shadow-2xl group cursor-pointer active:scale-95 font-poppins"
               >
-                <span>Schedule a Visit</span>
-                <ArrowRight className="w-4 h-4 text-emerald-400" />
+                <span>Get a Free Quote</span>
+                <div className="w-6 h-6 rounded-full bg-amber-600 group-hover:bg-slate-950 text-white flex items-center justify-center transition-colors">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
               </button>
 
-              <button
-                onClick={onExploreClick}
-                className="px-7 py-3.5 rounded-full bg-white/90 text-slate-950 font-bold text-xs uppercase tracking-wider hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center space-x-2"
-              >
-                <LayoutGrid className="w-4 h-4 text-slate-950" />
-                <span>View Gallery</span>
-              </button>
             </div>
 
           </div>
